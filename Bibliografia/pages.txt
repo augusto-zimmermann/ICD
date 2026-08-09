@@ -1,0 +1,5 @@
+https://es.r4ds.hadley.nz/
+https://clauswilke.com/dataviz/
+https://homes.cs.washington.edu/~jheer/files/zoo/
+https://handsondataviz.org/
+https://www.data-to-viz.com/caveats.html
