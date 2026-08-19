@@ -1,0 +1,163 @@
+---
+title: "Virtual_240313"
+author: "Leila Asplanato"
+date: "2024-09-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Librerías e importación de datos
+
+```{r}
+library(tidyverse) 
+library(forcats)  # https://forcats.tidyverse.org/articles/forcats.html
+                  # https://es.r4ds.hadley.nz/15-factors.html
+
+titanic <- read_csv("Datasets/titanic2.csv", locale = locale(decimal_mark = ","))
+```
+
+```{r}
+ggplot(data = titanic) +
+  geom_bar(mapping = aes(x=who, fill=alone))+
+  ylab("Cantidad de personas")+
+  xlab("Who")+
+  scale_fill_discrete(name = "Viajó Sólo/a?", labels=c("NO","SI"))
+```
+
+## Según frecuencia (fct_infreq)
+
+Para ordenar según cantidades/frecuencia de aparición
+
+```{r}
+ggplot(data = titanic) +
+  geom_bar(mapping = aes(x=fct_infreq(who), fill=alone))+
+  ylab("Cantidad de personas")+
+  xlab("Who")+
+  scale_fill_discrete(name = "Viajó Sólo/a?", labels=c("NO","SI"))
+```
+
+También se puede hacer usando un *pipeline*
+
+```{r}
+titanic %>% 
+  mutate(who= who %>% fct_infreq()) %>% 
+  ggplot() + 
+  geom_bar(aes(x=who,fill=alone))+
+  ylab("Cantidad de personas")+
+  xlab("Who")+
+  scale_fill_discrete(name = "Viajó Sólo/a?", labels=c("NO","SI"))
+```
+
+Y si queremos hacerlo en el orden inverso?
+
+## Revertir el orden (+fct_rev())
+
+```{r}
+titanic %>% 
+  mutate(who= who %>% fct_infreq() %>% fct_rev()) %>% 
+  ggplot() + 
+  geom_bar(aes(x=who,fill=alone))+
+  ylab("Cantidad de personas")+
+  xlab("Who")+
+  scale_fill_discrete(name = "Viajó Sólo/a?", labels=c("NO","SI"))
+```
+
+```{r}
+titanic %>% ggplot()+
+  geom_bar(aes(x = siblings_of_the_passenger))
+```
+
+```{r}
+titanic %>% ggplot()+
+  geom_bar(aes(x = siblings_of_the_passenger))+
+  scale_x_reverse()
+```
+
+
+```{r}
+titanic %>% ggplot()+
+  geom_bar(aes(x = factor(siblings_of_the_passenger) %>% fct_rev()))
+```
+
+Faltan ediciones en este gráfico, ¿qué sumarían?
+
+## Breve apartado: ¿¿Factor??
+
+```{r}
+x1 <- c("Dic", "Abr", "Ene", "Mar")
+x2 <- c("Dic", "Abr", "Eme", "Mar")
+x3 <- c("Dic", "Abr", "Ene", "Mar", "Dic", "Abr", "Eme", "Mar")
+```
+
+```{r}
+sort(x1)
+sort(x2)
+```
+
+```{r}
+niveles_meses <- c(
+  "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+  "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+)
+
+y1 <- factor(x1, levels = niveles_meses)
+y2 <- factor(x2, levels = niveles_meses)
+
+sort(y1)
+sort(y2)
+
+levels(y1)
+```
+
+## Reorder (fct_reorder())
+
+```{r}
+library(datos) #probablemente tengan que instalarla
+encuesta_df  <- encuesta
+view(encuesta_df)
+```
+
+```{r}
+encuesta_interes <- encuesta_df %>% 
+                      group_by(religion) %>% 
+                        summarise(
+                          edad_promedio = mean(edad, na.rm = TRUE),
+                          horas_tv_promedio = mean(horas_tv, na.rm = TRUE),
+                          cantidad = n())
+```
+
+¿Qué pasó con las unidades del dataset en este caso?
+
+### Religión vs horas que ven televisión
+
+¿Qué tipo de variables tengo?
+
+```{r}
+glimpse(encuesta_df)
+levels(encuesta_df$religion)
+```
+
+```{r}
+ggplot(encuesta_interes, aes(horas_tv_promedio, religion)) + 
+  geom_point()
+```
+
+Si quisiera responder algo respecto de consumo de tv en función de religiones, es cómodo así como está presentado? Por ejemplo, cuál es la religión que más tv ve? La que menos? Top 5?
+
+### fct_reorder, la función
+
+Toma dos argumentos:
+
+-   f: el factor, la variable categórica cuyos niveles queremos re-ordenar
+
+-   x: un vector numérico a usar para reordenar los niveles de f
+
+```{r}
+ggplot(encuesta_interes %>% filter(cantidad >50), 
+       aes(x = horas_tv_promedio, y = fct_rev(fct_reorder(religion, horas_tv_promedio)), size = cantidad, color = edad_promedio)) +
+  geom_point()
+
+```
