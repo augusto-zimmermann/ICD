@@ -119,3 +119,36 @@ Key Modification Techniques
         - `theme_bw()` (White background with a black border)
         - `theme_minimal()` (Clean layout, no border, light gray grids)
         - `theme_classic()` (Clean layout, x and y axis lines only, no gridlines)
+
+## Respecto a proporciones
+
+![[smoker-region.png]]
+
+¿No podría pasar que esta región tenga más fumadores sólo porque es la más numerosa en el dataset? ¿Qué gráfico permitiría explorar esta pregunta?
+
+a. Gráfico de barras que muestre la composición regional para el grupo fumador y el no fumador. Es decir, el gráfico que se obtiene con este código:
+
+```r
+ggplot(data = df) +
+  geom_bar(aes(x=smoker, fill=region), position='fill')
+```
+
+![[psmoker-region1.png]]
+
+b. Gráfico de barras que muestre las proporciones de fumador y no fumador para cada región. Es decir, el gráfico que se obtiene con este código:
+
+```r
+ggplot(data = df) +
+  geom_bar(aes(x=region, fill=smoker), position='fill') 
+```
+
+![[psmoker-region2.png]]
+
+La respuesta correcta es la b.
+
+¿Por qué es la opción correcta?
+
+- Opción b (`aes(x=region, fill=smoker), position='fill'`): Coloca las regiones en el eje $x$ y divide cada barra según la condición de fumador. Al usar `position='fill'`, cada barra regional se normaliza al 100% (proporción). Esto permite comparar directamente el porcentaje de fumadores dentro de cada región, neutralizando por completo el sesgo de que una región tenga más observaciones (sea más numerosa) que otra en el dataset.
+- Opción a (`aes(x=smoker, fill=region`), `position='fill'`): Hace lo inverso; coloca al grupo de fumadores y no fumadores en el eje $x$ y los divide por región. Esto responde a la pregunta "de todos los fumadores, ¿qué proporción pertenece a cada región?", lo cual no resuelve la duda sobre si una región fuma más en proporción a su propia población.
+
+Para saber si una región tiene una tasa de fumadores más alta independientemente de su tamaño poblacional en la muestra, el gráfico debe agrupar por región y mostrar las proporciones internas de fumadores/no fumadores, tal como lo hace el código de la opción b.
