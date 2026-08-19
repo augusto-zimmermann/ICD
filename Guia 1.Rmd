@@ -1,0 +1,75 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Levantando los datos
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data <- read_csv('Datasets/properati_SM_SPA.csv')
+```
+## Vistazo general
+
+```{r}
+view(data)
+glimpse(data) # Tira una tabla reducida en consola
+```
+
+## Consultar README para mas info de una tabla
+
+```{r}
+help("iris")
+```
+
+## Cuantas filas hay?
+
+```{r}
+nrow(data)
+```
+
+# Cuántas columnas hay?
+
+```{r}
+ncol(data)
+```
+# Qué variables son numéricas?
+
+# Qué otros tipos de variables hay?
+
+# Cuáles podrían ser categóricas?
+
+
+# Qué representa la variable l4?
+```{r}
+unique(data$l4)
+```
+
+```{r}
+distinct(select(data, l4)) # Especifico de la libreria tidy
+```
+
+# Qué objeto devuelve cada una de las funciones?
+
+
+
+
+# Cuantos anuncios de departamentos y cuantos de casas hay en el listado?
+```{r}
+count(data, tipo_propiedad)
+```
+# Grafico de dispersion
+
+```{r}
+ggplot(data, aes(x=sup_cubierta, y=precio)) +
+  geom_point() +
+  xlab("Superficie cubierta [m2]") +
+  ylab("Precio [USD]")
+
+ggplot(data, aes(x=sup_cubierta, y=precio, color=...)) +
+  geom_point() +
+  xlab("Superficie cubierta [m2]") +
+  ylab("Precio [USD]")
+```
