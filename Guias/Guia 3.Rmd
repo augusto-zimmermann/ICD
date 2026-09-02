@@ -1,0 +1,17 @@
+---
+title: "Guia 3"
+author: "Augusto Zimmermann"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+df <- read_csv('insurance.csv')
+View(df)
+```
+filter
+```{r}
+df_filter <- filter(df, sex=='male' & smoker=='yes') # Filtrar solo fumadores varones
+```
+  
