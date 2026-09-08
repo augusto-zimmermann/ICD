@@ -9,9 +9,11 @@ df <- read_csv('insurance.csv')
 # Punto 4
 #--------------
 df %>%
-  filter(sex==???, ???) %>%     # Filtrar solo fumadores varones
-  ggplot(aes(x=???, y=???)) +   # que variables van en los ejes
+  filter(sex==sex=='male' & smoker=='yes') %>%     # Filtrar solo fumadores varones
+  ggplot(aes(x=age, y=charges))+
   geom_point()
+
+# Se puede decir que el costo del seguro de los fumadores tiene una tendencia positiva conforme a la edad
 
 #--------------
 # Punto 5

@@ -5,9 +5,9 @@ date: "2024-09-09"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+#```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)
+#```
 
 ## Librerías e importación de datos
 
@@ -16,7 +16,7 @@ library(tidyverse)
 library(forcats)  # https://forcats.tidyverse.org/articles/forcats.html
                   # https://es.r4ds.hadley.nz/15-factors.html
 
-titanic <- read_csv("Datasets/titanic2.csv", locale = locale(decimal_mark = ","))
+titanic <- read_csv("titanic2.csv", locale = locale(decimal_mark = ","))
 ```
 
 ```{r}

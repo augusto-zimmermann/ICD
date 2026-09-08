@@ -32,14 +32,14 @@ Cuando se importa la biblioteca de los vuelos de NY del año 2013 con `library(n
 ```{r flights, echo = TRUE}
 
 # Si queremos ver todas las tablas que vienen incluidas podemos usar
-#data(package = "nycflights13")) 
+# data(package = "nycflights13")) 
 
 help(flights)
 ```
 
 Tambien recordemos el `glimpse(...)` .
 
-```{r flights, echo = TRUE}
+```{r flights2, echo = TRUE}
 #Si quisiésemos acceder solamente a esta tabla en vez de cargar todo podemos acceder con
 #nycflights13::flights
 
