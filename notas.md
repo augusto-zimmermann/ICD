@@ -8,7 +8,7 @@ data <- read_csv('properati_SM_SPA.csv')
 
 > [!NOTE]
 > `= vs <-`
-> En R es común usar `<- `como el operador de asignación, que es tal vez más claro que el `=` de otros lenguajes. Para escribir más rápido ese símbolo formado por dos caracteres, pueden usar el atajo `Alt+-` (es decir, la tecla Alt y el menos apretados simultaneamente). De todas formas el `=` también está permitido en `R`.
+> En R es común usar `<-`como el operador de asignación, que es tal vez más claro que el `=` de otros lenguajes. Para escribir más rápido ese símbolo formado por dos caracteres, pueden usar el atajo `Alt+-` (es decir, la tecla Alt y el menos apretados simultaneamente). De todas formas el `=` también está permitido en `R`.
 
 ```r
 class()
@@ -59,7 +59,6 @@ Por ejemplo: De los hombres hay tal proporción que ...
 > [!DANGER] Importantisimo
 > No podes comparar cantidades entre poblaciones.
 > Si están preguntando sobre proporciones en un gráfico de cantidades OJO. Lo mismo al revés
-
 > Clasico pregunta parcial, puedo decir que hay mayor cantidad de mujeres que sobrevivieron de las que murieron? Respuesta >>> ?
 
 ### Cuestionario
@@ -152,3 +151,10 @@ La respuesta correcta es la b.
 - Opción a (`aes(x=smoker, fill=region`), `position='fill'`): Hace lo inverso; coloca al grupo de fumadores y no fumadores en el eje $x$ y los divide por región. Esto responde a la pregunta "de todos los fumadores, ¿qué proporción pertenece a cada región?", lo cual no resuelve la duda sobre si una región fuma más en proporción a su propia población.
 
 Para saber si una región tiene una tasa de fumadores más alta independientemente de su tamaño poblacional en la muestra, el gráfico debe agrupar por región y mostrar las proporciones internas de fumadores/no fumadores, tal como lo hace el código de la opción b.
+
+## Clase 6
+
+Modelado: sacar patrones utiles de los datos
+Redes neuronales
+
+Determinar que herramienta sirve mejor para procesar los datos
