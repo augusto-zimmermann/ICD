@@ -1,0 +1,364 @@
+---
+title: "Modelos Lineales en R con el dataset MPG"
+author: "ICD"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(modelr)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Introducción
+
+En esta clase analizaremos el dataset **`mpg`**, disponible en `tidyverse`.
+
+```{r}
+help(mpg)
+mpg
+```
+
+Vamos a estudiar la relación entre el **rendimiento en ruta** (`hwy`, "Highway miles per gallon") y la **cilindrada del motor** (`displ`).
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(aes(x = displ, y = hwy)) +
+  labs(title = "Rendimiento en ruta vs. cilindrada del motor",
+       x = "Cilindrada (litros)", y = "Rendimiento en ruta (mpg)")
+
+```
+
+Guardemos este gráfico para reutilizarlo más adelante:
+
+```{r}
+p <- ggplot(data = mpg) +
+  geom_point(aes(x = displ, y = hwy)) +
+  labs(x = "Cilindrada (displ)", y = "Rendimiento (hwy)")
+```
+
+------------------------------------------------------------------------
+
+# Mod: Modelado lineal simple
+
+Queremos modelar la relación [suponiendo]{.underline} una **relación lineal** entre `displ` y `hwy`:
+
+$$
+hwy = w_0 + w_1 \times displ
+$$
+
+Creamos el modelo y analizamos su resumen. Fíjense la relación entre la notación/sintaxis de R y la ecuación matemática.
+
+R modela, es decir, busca parámetros de la ecuación tal que se ajuste a los datos observados. En este caso de modelo lineal simple, hay una ordenada al origen y una pendiente.
+
+```{r}
+mod <- lm(hwy ~ displ, data = mpg)
+summary(mod)
+```
+
+**Preguntas para reflexionar:**
+
+-   ¿Qué opinan de la significancia? ¿Parece que hay relación?\
+-   ¿Cómo interpretamos los parámetros?
+
+Algunos puntos importantes:
+
+-   **Residual standard error:** una forma de medir la dispersión de los residuos.
+    -   3.836 on 232 degrees of freedom: la predicción se desvia +- 3.8\
+-   **R² ajustado:** proporción de variabilidad total de hwy explicada por el modelo.
+    -   Multiple R-squared: 0.5868, Adjusted R-squared: 0.585
+        -   casi un 59% de la variabilidad en los datos de hwy se puede atribuir a la cilindrada)
+        -   ver para detalles (<https://www.datacamp.com/es/tutorial/adjusted-r-squared>)\
+-   **F-statistic:** compara el modelo actual contra uno sin predictores.
+    -   F-statistic: 329.5 on 1 and 232 DF, p-value: \< 2.2e-16\
+        Mide si la mejora es estadisticamente significativa contra el modelo que sólo tiene el intercepto (valores más grandes es "mejor", p chico es "mejor")
+
+------------------------------------------------------------------------
+
+## Grilla de predicciones
+
+Si vemos los valores de displ, notamos que sólo aparecen algunos valores. Entonces, vamos a usar una grilla de las variables (en este caso displ) en lugar del dataset entero (35 vs 234)
+
+```{r}
+length(unique(mpg$displ))
+```
+
+```{r}
+grilla <- data_grid(mpg, displ) %>%
+  add_predictions(model = mod)
+
+grilla
+```
+
+Visualizamos el modelo junto con los datos:
+
+```{r}
+p + geom_line(data = grilla, aes(x = displ, y = pred), color = "red", size = 1)
+```
+
+-   Extrapolando: ¿qué les parece que pasa si miramos para cilindradas \<0? ¿Y para valores \>\>\>7?
+
+## Análisis de residuos
+
+Los residuos son la diferencia entre el valor observado y el predicho.
+
+```{r}
+plot(mod)
+```
+
+Podemos obtenerlos manualmente, con el código de abajo. Comparemos el dataset original, cuando sumamos los residuos, y cómo cambia respecto de la grilla de antes.
+
+```{r}
+mpg1 <- mpg %>%
+  add_predictions(model = mod) %>%
+  add_residuals(model = mod, var = "resid") %>% relocate(displ, pred, resid)
+
+mpg  %>% relocate(displ)
+
+mpg1
+
+grilla 
+
+```
+
+### Residuos vs predicción:
+
+No siempre vamos a poder graficar los datos, pero siempre vamos a poder graficar y analizar los residuos.
+
+```{r}
+ggplot(mpg1, aes(x = pred, y = resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth() +
+  labs(title = "Residuos vs Predicciones")
+```
+
+### Residuos vs variable predictora:
+
+```{r}
+ggplot(mpg1, aes(x = displ, y = resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_smooth() +
+  labs(title = "Residuos vs Cilindrada")
+```
+
+------------------------------------------------------------------------
+
+# Mod2: Modelo cuadrático
+
+Probemos con una forma más flexible: vamos a tratar de mejorar el modelo incorporando funciones no lineales de la variable predictora.
+
+¿Qué piensan que va a pasar con el número de parámetros si utilizamos, por ejemplo, una relación cuadrática con el volumen del motor?
+
+$$
+hwy = w_0 + w_1 \times displ + w_2 \times displ^2
+$$
+
+```{r}
+mod2 <- lm(hwy ~ displ + I(displ^2), data = mpg)  #observar cómo tenemos que usar I y no poner * directamente! 
+summary(mod2)
+```
+
+La I es para decirle que no interprete nada, simplemente que ponga literalmente el displ al cuadrado.
+
+-   ¿Cuantos coeficientes tiene el modelo ahora? ¿podemos interpretar tan facilmente como antes?
+
+-   ¿Cómo se comparan las métricas con los valores del modelo simple?
+
+```{r}
+summary(mod)
+```
+
+Alternativamente, y muy útil si se quieren usar grados más altos, está "poly". Ojo que para comparar directamente con la notación I hay que aclarar raw = TRUE.
+
+```{r}
+mod2_1 <- lm(hwy ~ poly(displ, 2, raw = TRUE), data = mpg)
+summary(mod2_1)
+```
+
+Visualizamos:
+
+```{r}
+grilla2 <- data_grid(mpg, displ) %>%
+  add_predictions(model = mod2)
+
+grilla
+grilla2
+
+p + geom_line(data = grilla2, aes(x = displ, y = pred), color = "red")
+```
+
+Parece que la recta "sigue" mejor a los datos, veamos los residuos:
+
+```{r}
+plot(mod2)
+```
+
+Nota: como acá estamos usando la misma variable, pero agregando otro grado, podríamos haber usado la misma grilla de antes, y sumado las predicciones de este modelo.
+
+```{r}
+grilla2_2 <- grilla %>% add_predictions(model = mod2, var = "pred2")
+
+grilla
+grilla2_2
+
+```
+
+------------------------------------------------------------------------
+
+# Mod3: Agregando una segunda variable continua
+
+Sigamos complejizando: ¿el año impactará en el rendimiento del auto? Sumemos esta segunda variable "continua".
+
+$$
+hwy = w_0 + w_1 \times displ + w_2 \times year
+$$
+
+```{r}
+mod3 <- lm(hwy ~ displ + year, data = mpg)
+summary(mod3)
+```
+
+Veamos las preddicciones y el gráfico con el siguiente código. Pensemos:
+
+-   ¿cómo cambiará la grilla?
+
+-   ¿cómo debe verse el gráfico?
+
+```{r}
+grilla3 <- data_grid(mpg, displ, year) %>%
+  add_predictions(model = mod3)
+
+grilla3
+
+p + geom_line(data=grilla3, aes(x=displ, y=pred), color='red') + labs(title= "Mal gráfico")
+
+p + geom_line(data = grilla3, aes(x = displ, y = pred, group = year, color = year)) +
+  labs(color = "Año", title = "Buen gráfico")
+
+unique(mpg$year)
+
+p + geom_line(data=grilla3, aes(x=displ, y=pred, group=year, color=factor(year)))+
+  labs(color = "Año", title ="Mejor gráfico")
+```
+
+------------------------------------------------------------------------
+
+# Mod4: 2 vars - Incorporando una variable categórica
+
+¿Influye el tipo de auto?
+
+```{r}
+unique(mpg$class)
+```
+
+Modelo con `class`:
+
+```{r}
+mod4 <- lm(hwy ~ displ + class, data = mpg)
+summary(mod4)
+```
+
+Vamos en detalle. R toma el uno los tipos de autos como referencia, (en este caso va ser 2seater"), y va a expresar el intercepto de las otras clases como offsets/correcciones a esta. Conceptualmente seria algo como esto:
+
+2 seater $$ hwy = w_0 + w_1 \times displ$$
+
+compact $$hwy = (w_0 +w_c) + w_1 \times displ$$ midsize $$hwy = (w_0 +w_m) + w_1 \times displ$$
+
+Es decir, la pendiente es la misma, cambia la ordenada al origen según cada tipo de auto.
+
+-   ¿Cuántos parámetros tiene que tener?
+
+Una pendiente + tantas ordenadas al origen como clases (valores de la categórica: la base + las otras corregidas)
+
+Este coeficiente de "displ" es distinto al que veníamos viendo. Entonces, ¿cómo afecta el volumen del motor del auto al rendimiento del mismo?\
+Nuestra respuesta va a depender de la información que tenemos. Si no sabemos el tipo, tenemos que usar el primer modelo donde el valor estimado es promediando la información de todos los autos de manera indistinta. Sería como marginalizando sobre la variable clase, porque no la sabemos.\
+Si contamos con la clase de auto, usamos este último modelo, condicionamos a la infomación presente.
+
+Visualizamos:
+
+```{r}
+grilla4 <- data_grid(mpg, displ, class) %>%
+  add_predictions(model = mod4)
+
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy, color = class)) +
+  geom_line(data = grilla4, aes(x = displ, y = pred, color = class)) +
+  labs(color = "Clase de auto")
+```
+
+------------------------------------------------------------------------
+
+# Mod5: Modelo polinomial + categórica
+
+```{r}
+mod5 <- lm(hwy ~ poly(displ, 2, raw = TRUE) + class, data = mpg)
+summary(mod5)
+```
+
+-   ¿Qué está pasando ahora con la significancia de los coeficientes?
+
+```{r}
+grilla5 <- data_grid(mpg, displ, class) %>%
+  add_predictions(model = mod5)
+
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy, color = class)) +
+  geom_line(data = grilla5, aes(x = displ, y = pred, color = class))
+```
+
+Para R, las rectas de 2 seater, compact, midsize y subcompact no son significativamente distinguibles entre sí.
+
+# Mod6: Modelo con múltiples variables
+
+```{r}
+mod6 <- lm(hwy ~ poly(displ, 2, raw = TRUE) + year + class, data = mpg)
+summary(mod6)
+```
+
+-   ¿Cómo hablamos de estos coeficientes? Tenemos relaciones estimadas, a las otras variables fijas. Por ejemplo, a año y clase fija, la relación lineal con el tamaño es X y con el tamaño al cuadrado XX.
+
+```{r}
+grilla6 <- data_grid(mpg, displ, class, year) %>%
+  add_predictions(model = mod6)
+
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy, color = class)) +
+  geom_line(data = grilla6, aes(x = displ, y = pred, color = class)) +
+  facet_wrap(~year)
+```
+
+------------------------------------------------------------------------
+
+# Mod7: Modelo con dos continuas y dos categóricas
+
+```{r}
+mod7 <- lm(hwy ~ poly(displ, 2, raw = TRUE) + year + class + trans, data = mpg)
+summary(mod7)
+```
+
+```{r}
+grilla7 <- data_grid(mpg, displ, class, year, trans) %>%
+  add_predictions(model = mod7)
+
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy, color = class)) +
+  geom_line(data = grilla7, aes(x = displ, y = pred, color = class)) +
+  facet_grid(year ~ trans)
+```
+
+------------------------------------------------------------------------
+
+# Cierre
+
+Hasta ahora vimos varios modelos y cómo interpretarlos.
+
+⚠️ **Importante:**\
+No debemos comparar modelos únicamente usando **R²** o **R² ajustado**.\
+Más adelante veremos métodos adecuados para comparar modelos. Además, todos los que vimos en este ejercicio tenían una única pendiente... vamos a ver cómo cambiar eso en la segunda clase de modelado.
