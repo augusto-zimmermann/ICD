@@ -1,0 +1,105 @@
+---
+title: "Insurance_Analysis"
+author: "Augusto Zimmermann"
+date: "2026-19-08"
+output: html_document
+---
+```{r}
+library(tidyverse) # para cargar el paquete en la sesión actual de R
+```
+
+```{r}
+data <- read_csv("insurance.csv")
+```
+
+```{r}
+view(data)
+```
+
+```{r}
+glimpse(data) # Tira una tabla reducida en consola
+```
+
+```{r}
+ncol(data)
+```
+
+```{r}
+nrow(data)
+```
+
+## Gráfico de dispersión entre las variables age y charges. 
+
+Dispongan en el eje x la variable que consideren independiente, como se suele hacer.
+
+No olviden modificar el nombre de los ejes e indicar las unidades en caso de ser necesario (pueden consultar las Cápsulas 1 para realizar esto).
+
+```{r}
+ggplot(data, aes(x = age, y = charges)) +
+  geom_point(aes(color = smoker)) +
+  xlab("Edad") +
+  ylab("Cargo [USD]") +
+  #theme_classic() +
+  #theme(legend.position = "bottom") +
+  labs(color = "Fumador") +
+  scale_color_discrete(labels = c("No", "Si"))
+```
+
+## Filtro (jaj) smokers
+
+La variable que más información revela al agregarla al gráfico es “smoker”. Súmenla como color al scatter plot que ya realizaron. No olviden modificar el nombre de los ejes, la leyenda e indicar las unidades en caso de ser necesario (pueden consultar las Cápsulas 1 para realizarlo).
+
+### Filtro (jaj) smokers
+
+```{r}
+smokers <- filter(data, smoker == "yes")
+```
+
+### Grafico smokers
+
+```{r}
+ggplot(smokers) +
+  geom_bar(aes(x = region, fill = region)) +
+  xlab("Region") +
+  ylab("Cantidad de fumadores") +
+  scale_x_discrete(labels = c("Noreste", "Noroeste", "Sureste", "Suroeste")) +
+  scale_fill_manual(values = c("#515A47", "#ABC4AB", "#69385C", "#E07BE0")) +
+  theme(legend.position = "none")
+```
+
+## Correcta representación de datos
+
+A partir del gráfico anterior, ¿se puede afirmar que southeast es la región más afectada por el hábito de fumar? ¿No podría pasar que esta región tenga más fumadores sólo porque es la más numerosa en el dataset? Entonces, ¿qué gráfico permitiría explorar esta pregunta?
+
+### Opcion a
+
+Gráfico de barras que muestre la composición regional para el grupo fumador y el no fumador. Es decir, el gráfico que se obtiene con este código:
+
+```{r}
+ggplot(data) +
+  geom_bar(aes(x = smoker, fill = region), position = "fill")
+```
+
+### Opcion b
+
+Gráfico de barras que muestre las proporciones de fumador y no fumador para cada región. Es decir, el gráfico que se obtiene con este código:
+
+```{r}
+ggplot(data) +
+  geom_bar(aes(x = region, fill = smoker), position = "fill")
+```
+
+## Pregunta 16
+
+Para poder responder la pregunta anterior, debemos realizar un análisis en unidades porcentuales. Realizar un gráfico de barras que muestre los porcentajes de situación fumadora para cada región. No olviden modificar el nombre de los ejes.
+
+
+```{r}
+ggplot(data) +
+  geom_bar(aes(x = region, fill = smoker), position = "fill") +
+  xlab("Region") +
+  ylab("Cantidad de fumadores") +
+  scale_x_discrete(labels = c("Noreste", "Noroeste", "Sureste", "Suroeste")) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_manual(values = c("#4FB286", "#73628A"))
+```
